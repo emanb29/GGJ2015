@@ -1,0 +1,10 @@
+So the basic design principles for areas is this:
+-Neither player can see the path to the goal alone. They
+ need to communicate about what is or isn't there to find
+ the safe route.
+-If one player sees a wall and the other player doesn't, the
+ wall does not exist.
+-If one player sees a pit and the other player doesn't, the
+ pit does not exist.
+-If one player sees a trap and the other player doesn't the
+-trap DOES exist.
