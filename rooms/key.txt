@@ -1,0 +1,9 @@
+Key:
+# - Wall
+. - Floor
+o - Pit
+w - Trap
+@ - Start
+$ - End
+
+Nice and simple.

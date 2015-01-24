@@ -1,0 +1,6 @@
+Each room has 3 files: the "true" maze, and then the maze at it appears
+from each player's perspective.  The testRoom has all the basic aspects
+of the game, including pits, traps, and walls that one player can see
+and the other can't.  Might be a good starting point for testing the
+engine.  The numbered rooms are drafts of the "tutorial rooms" that introduce
+the mechanics of the game.  They'd also be good for testing.
