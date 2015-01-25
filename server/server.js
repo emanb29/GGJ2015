@@ -23,11 +23,11 @@ app.all('/game/ready/:sid/:pid', function(req, res){
     var pid = req.params.pid;
     var updates = {  };
     if (pid == 1){
-        record.p1state = {
+        updates.p1state = {
             ready: true
         };
     } else {
-        record.p2state = {
+        updates.p2state = {
             ready: true
         };
     }
@@ -39,7 +39,7 @@ app.all('/game/ready/:sid/:pid', function(req, res){
         }
     });
 });
-app.get('/game/:sid/:pid', function(req, res){
+app.get('/game/getOtherPlayerState/:sid/:pid', function(req, res){
     Game.findById(req.params.sid, function(err, record){
         if (req.params.pid == 1) {
             res.send(record.p2state);
