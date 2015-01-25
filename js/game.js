@@ -211,8 +211,8 @@ function PutLevelIntoSceneGraph()
 	geometries[GAME.Floor] = new THREE.BoxGeometry( blockLength, blockHeight / 2.0, blockLength ); 
 	geometries[GAME.Pit] = undefined
 	geometries[GAME.Trap] = new THREE.CylinderGeometry( 0, blockLength * 0.25, blockHeight / 2.0, 8, 1, false );
-	geometries[GAME.Start] = new THREE.TorusGeometry( blockLength * 0.25, blockLength * 0.75 )
-	geometries[GAME.End] = new THREE.IcosahedronGeometry( blockLength * 0.25 )
+	geometries[GAME.Start] = new THREE.SphereGeometry( blockLength * 0.2)
+	geometries[GAME.End] = new THREE.SphereGeometry( blockLength * 0.25 )
 
 
 	var materials = {}
@@ -234,6 +234,10 @@ function PutLevelIntoSceneGraph()
 //	material = new THREE.MeshBasicMaterial( { vertexColors: THREE.VertexColors } );
 	material = new THREE.MeshBasicMaterial( { color: 0xff0000 });
 
+	// Store 
+	var startingMazeX = 0
+	var startingMazeZ = 0
+
 	for (var z = 0; z < displayedLevel.length; z++)
 	{
 		for (var x = 0; x < displayedLevel[0].length; x++)
@@ -250,14 +254,29 @@ function PutLevelIntoSceneGraph()
 			mesh.position.y = offsets[block]
 //			mesh.position.y = blockHeight / 2.0
 
+			if (block == GAME.Start)
+			{
+				startingMazeX = x
+				startingMazeZ = z
+			}
 		}
 	}
+
+
+	// Move player to their starting location.
+	var startingX = startingMazeX * blockLength
+	var startingZ = startingMazeZ * blockLength
+	controls.getObject().position.x = startingX
+	controls.getObject().position.z = startingZ
+
+
 }
+
 PutLevelIntoSceneGraph()		// TODO Do this in response to level changes.
+
+// TODO Clear level out of scene graph.
 
 // TODO Get state from server - v1, just grab it locally.
 
-
-// TODO Generate Three.JS cubes from level state.
 
 
