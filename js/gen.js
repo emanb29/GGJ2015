@@ -642,7 +642,7 @@ var generator = function(seed){
         container.setAttribute("style","width:" + grid_width * block_size + "px; height:" + grid_height * block_size + "px; margin: 20px auto;");
     };
 };
-
+/*
 // generate ascii
 var debug = document.getElementById("debug");
 var gen = new generator(Date());
@@ -666,3 +666,4 @@ ascii_container.innerHTML = ascii;
 master_ascii_container.innerHTML = master_ascii;
 p1_ascii_container.innerHTML = p1_ascii;
 p2_ascii_container.innerHTML = p2_ascii;
+*/
