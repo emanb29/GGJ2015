@@ -50,10 +50,11 @@
 // debug function to output to console and screen
 // disable in prod
 function log(msg){
-//    console.log(msg);
-//    if(debug){
-//        debug.innerHTML += msg;
-//    }
+    var debug = document.getElementById("debug");
+    console.log(msg);
+    if(debug){
+        debug.innerHTML += msg;
+    }
 }
 
 var generator = function(seed){
@@ -101,15 +102,18 @@ var generator = function(seed){
 
         // populate maze with empty cells
         var i, r, c;
-        for( i = 0, r = 1, c = 1; i < grid_width * grid_height; i++, c++){
-            // set column
-            if(c === grid_width + 1){
-                c = 1;
+        
+        this.emptyCells = function(){
+            for( i = 0, r = 1, c = 1; i < grid_width * grid_height; i++, c++){
+                // set column
+                if(c === grid_width + 1){
+                    c = 1;
+                }
+                // set row
+                r = Math.floor(i / grid_width + 1);
+                this.cells[i] = new cell(r, c);
             }
-            // set row
-            r = Math.floor(i / grid_width + 1);
-            this.cells[i] = new cell(r, c);
-        }
+        };
 
         // set the preferenced direction to go lr, up
         this.setPreference = function(start, end){
@@ -287,19 +291,14 @@ var generator = function(seed){
             var diff_r, diff_c;
             var try_limit = 0;
             while(to_far){
-                log("try " + try_limit);
                 rand_cell = this.cells[Math.floor(Math.random() * this.cells.length - 1) +1];
-                log("rand cell selected at " + rand_cell.r + ", " + rand_cell.c + "\n");
                 diff_r = Math.abs(rand_cell.r - start.r);
                 diff_c = Math.abs(rand_cell.c - start.c);
                 if(diff_r + diff_c < max_distance && rand_cell.value === 0){
-                    log("rand cell is not too far \n");
                     if(diff_r > 4 && diff_c > 4 ){
                         to_far = false;
                     }
-                    log("rand cell is too close \n");
                 }
-                log("rand cell is too far \n");
                 try_limit++;
                 if(try_limit > 20){
                     to_far = false;
@@ -618,21 +617,35 @@ var generator = function(seed){
             return ascii;
         };
 
-        // get shit done
-        log("generating solution \n");
-        this.generate_solution_path();
-        for(var i = 0; i < branches; i++){
-            log("generating a branch \n");
-            this.generate_branch();
+        // if last two cells in solution do not share the same column than rebuild
+        // this is a hack to get the 2x2 doors in
+        var invalid_maze = true;
+        while(invalid_maze){
+            this.solution_path = [];
+            this.branches = [];
+            this.emptyCells();
+            // get shit done
+            log("generating solution \n");
+            this.generate_solution_path();
+            for(var i = 0; i < branches; i++){
+                log("generating a branch \n");
+                this.generate_branch();
+            }
+            log("generating false walls \n");
+            this.setFalseWalls();
+            log("generating false traps \n");
+            this.setFalseTraps();
+            this.setFalseTraps();
+            this.setFalseTraps();
+            log("generating real traps \n");
+            this.setTraps();
+            log("valid end?\n");
+            if(this.solution_path[this.solution_path.length -1].c === this.solution_path[this.solution_path.length -2].c){
+                invalid_maze = false;
+                this.solution_path[this.solution_path.length -1].value = "$";
+                this.solution_path[this.solution_path.length -2].value = "$";
+            }
         }
-        log("generating false walls");
-        this.setFalseWalls();
-        log("generating false traps");
-        this.setFalseTraps();
-        this.setFalseTraps();
-        this.setFalseTraps();
-        log("generating real traps");
-        this.setTraps();
     };
 
     // init the canvas for visualazation
