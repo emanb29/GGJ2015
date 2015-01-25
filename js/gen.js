@@ -1,20 +1,25 @@
 /**
  * Generator class which contains cell and maze definitions and visual debugging methods
  * 
+ * depends on //cdnjs.cloudflare.com/ajax/libs/seedrandom/2.3.11/seedrandom.min.js
+ * 
  * usage:
- * var gen = new generator(16, 9, 3);
+ * var gen = new generator("seed");
  * var m = new gen.maze();
  * var ascii = m.getAscii();
  * 
- * @param int width how many blocks is the width
- * @param int height how many blocks high
- * @param int branches how many branches off main path (the more the more room and loops)
+ * @param any seed for random generator
  */
 
-var generator = function(width, height, branches){
+var generator = function(seed){
+    Math.seedrandom(seed);
+    
     var block_size = 16;
-    var grid_width = width;
-    var grid_height = height;
+    var grid_width = Math.floor(Math.random() * 16) + 8;
+    var grid_height = Math.floor(Math.random() * 16) + 8;
+    var branches = grid_width * grid_height / 100 + 1;
+    
+    // single cell
     var cell = function(r, c){
         this.r = r;
         this.c = c;
@@ -31,7 +36,8 @@ var generator = function(width, height, branches){
             ctx.fillRect(this.c * block_size - block_size, this.r * block_size - block_size, this.c * block_size, this.r * block_size);
         }
     };
-
+    
+    // maze
     this.maze = function(){
         // array of cells
         this.cells = [];
@@ -296,13 +302,13 @@ var generator = function(width, height, branches){
     };
 };
 
-// generate ascii
-//var gen = new generator(16, 8, 3);
+//// generate ascii
+//var gen = new generator("ggj 2015");
 //var m = new gen.maze();
 //var ascii = m.getAscii();
 //console.log(ascii);
-
-// visual debug ascii
+//
+//// visual debug ascii
 //var container = document.getElementById("container");
 //var canvas = document.getElementById("scene");
 //var ctx = canvas.getContext("2d");
