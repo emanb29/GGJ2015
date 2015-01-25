@@ -237,7 +237,8 @@ function init()
 
 	}
 
-	for ( var i = 0; i < 500; i ++ ) {
+	var numBoxes = 10;
+	for ( var i = 0; i < numBoxes; i ++ ) {
 
 		material = new THREE.MeshPhongMaterial( { specular: 0xffffff, shading: THREE.FlatShading, vertexColors: THREE.VertexColors } );
 
