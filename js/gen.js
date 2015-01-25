@@ -642,28 +642,3 @@ var generator = function(seed){
         container.setAttribute("style","width:" + grid_width * block_size + "px; height:" + grid_height * block_size + "px; margin: 20px auto;");
     };
 };
-/*
-// generate ascii
-var debug = document.getElementById("debug");
-var gen = new generator(Date());
-var m = new gen.maze();
-var ascii = m.getAscii();
-var master_ascii = m.getMasterAscii();
-var p1_ascii = m.getPlayer1Ascii();
-var p2_ascii = m.getPlayer2Ascii();
-
-// visual debug ascii
-var container = document.getElementById("container");
-var canvas = document.getElementById("scene");
-var ctx = canvas.getContext("2d");
-var ascii_container = document.getElementById("ascii");
-var master_ascii_container = document.getElementById("master_ascii");
-var p1_ascii_container = document.getElementById("p1_ascii");
-var p2_ascii_container = document.getElementById("p2_ascii");
-gen.initScene(container);
-m.paint(ctx);
-ascii_container.innerHTML = ascii;
-master_ascii_container.innerHTML = master_ascii;
-p1_ascii_container.innerHTML = p1_ascii;
-p2_ascii_container.innerHTML = p2_ascii;
-*/
