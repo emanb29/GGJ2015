@@ -239,8 +239,8 @@ var generator = function(seed){
         this.generate_solution_path = function(){
             // calculate starting and ending positions
             // cell 1 in first 20% and cell 2 in last 20%
-            var cell_1 = Math.floor(Math.random() * grid_width * grid_height  * 0.05);
-            var cell_2 = Math.floor(Math.random() * grid_width * grid_height  * 0.05 + grid_width * grid_height * 0.95);
+            var cell_1 = Math.floor(Math.random() * grid_width * grid_height  * 0.01);
+            var cell_2 = Math.floor(Math.random() * grid_width * grid_height  * 0.01 + grid_width * grid_height * 0.99);
 
             // randomize which cell is start/end
             var start, end;
@@ -310,7 +310,7 @@ var generator = function(seed){
 
         // gets all 9 adjacent cells
         // usefull to calculate if safe for trap etc
-        this.getAdjacentCells = function(cell){
+        this.getAdjacentCells = function(cell, filter){
             var start_c = cell.c - 1;
             var end_c = cell.c + 1;
             var start_r = cell.r - 1;
@@ -333,7 +333,7 @@ var generator = function(seed){
             for(i = start_c; i <= end_c; i++){
                 for(j = start_r; j <= end_r; j++){
                     var tmp_cell = this.getCellAtPosition(j, i);
-                    if(tmp_cell !== undefined && (cell.c !== tmp_cell.c || cell.r !== tmp_cell.r)){
+                    if(tmp_cell !== undefined && (cell.c !== tmp_cell.c || cell.r !== tmp_cell.r) && tmp_cell.value !== filter){
                         neighboors.push(tmp_cell);
                     }
                 }
@@ -343,16 +343,26 @@ var generator = function(seed){
 
         // sets false walls
         this.setFalseWalls = function(){
-            for(var i = 0; i < this.cells.length; i++){
-                if(this.cells[i].value === 2 && this.cells[i].start === true){
-                    if(Math.random() * 100 > 20){
-                        if(Math.random() * 100 > 50){
-                            this.cells[i].value = "f";
-                        } else {
-                            this.cells[i].value = "g";
+            for(var i = 0; i < grid_height * grid_width * 2; i++){
+                var pos = Math.random() * this.cells.length -1;
+                if(pos < 0){
+                    pos = 0;
+                }
+                rand_cell = this.cells[Math.floor(pos)];
+                if(rand_cell.value === 1){
+                    var adjacent = this.getAdjacentCells(rand_cell, 0);
+                    if(adjacent.length === 3){
+                        if(this.getAdjacentCells(rand_cell).length === this.getAdjacentCells(rand_cell, "f").length 
+                                && this.getAdjacentCells(rand_cell).length === this.getAdjacentCells(rand_cell, "g").length){
+                            if(Math.random() * 100 > 20){
+                                if(Math.random() * 100 > 50){
+                                    rand_cell.value = "f";
+                                } else {
+                                    rand_cell.value = "g";
+                                }
+                            }
                         }
                     }
-                } else if(this.cells[i].value === 1){
                 }
             }
         };
@@ -360,14 +370,14 @@ var generator = function(seed){
         // sets traps
         this.setTraps = function(){
             var rand_cell;
-            for(var i = 0; i < grid_height * grid_width; i++){
+            for(var i = 0; i < grid_height * grid_width / 10; i++){
                 var pos = Math.random() * this.cells.length -1;
                 if(pos < 0){
                     pos = 0;
                 }
                 rand_cell = this.cells[Math.floor(pos)];
-                // if end of branch path it is ok
-                if(rand_cell.value === 2 && rand_cell.end === true){
+                // if branch path it is ok
+                if(rand_cell.value === 2){
                     rand_cell.value = "w";
                 } else {
                     var adjacent = this.getAdjacentCells(rand_cell);
@@ -395,13 +405,18 @@ var generator = function(seed){
 
         // sets false traps
         this.setFalseTraps = function(){
-            for(var i = 0; i < this.cells.length; i++){
-                if(this.cells[i].value !== 0 && Math.random() * 100 > 95){
-                    if(this.cells[i].value === 1 || this.cells[i].value === 2){
+            for(var i = 0; i < grid_height * grid_width / 5; i++){
+                var pos = Math.random() * this.cells.length -1;
+                if(pos < 0){
+                    pos = 0;
+                }
+                rand_cell = this.cells[Math.floor(pos)];
+                if(rand_cell.value !== 0 && Math.random() * 100 > 95){
+                    if(rand_cell.value === 1 || rand_cell.value === 2){
                         if(Math.random() * 100 > 50){
-                            this.cells[i].value = "o";
+                            rand_cell.value = "o";
                         } else {
-                            this.cells[i].value = "p";
+                            rand_cell.value = "p";
                         }
                     }
                 }
@@ -628,7 +643,6 @@ var generator = function(seed){
     };
 };
 
-/*
 // generate ascii
 var debug = document.getElementById("debug");
 var gen = new generator(Date());
@@ -652,4 +666,3 @@ ascii_container.innerHTML = ascii;
 master_ascii_container.innerHTML = master_ascii;
 p1_ascii_container.innerHTML = p1_ascii;
 p2_ascii_container.innerHTML = p2_ascii;
-*/
