@@ -7,34 +7,77 @@
  * var gen = new generator("seed");
  * var m = new gen.maze();
  * var ascii = m.getAscii();
+ * var master_ascii = m.getMasterAscii();
+ * var player1_ascii = m.getPlayer1Ascii();
+ * var player2_ascii = m.getPlayer2Ascii();
  * 
  * @param any seed for random generator
+ * 
+ * ASCII CHART
+ * 
+ * There are 4 charts
+ * Source chart which is waht the geerator builds and uses to create the other three charts for the game
+ * The master chart is used by the game to determine if something is really there or not
+ * The individual player charts are used for rendering the individual players scenes
+ * 
+ * Key for master and players: 
+ *      # Wall 
+ *      . Floor
+ *      o Pit
+ *      w Trap
+ *      @ Start
+ *      $ End
+ *      
+ *  Source key
+ *      @ #FFF      start
+ *      $ #FFF      end
+ *      # #999      wall
+ *      f #00C      p1 false wall
+ *      g #006      p2 false wall
+ *      . #333,#666 floor  #333 is used to visualze the solution
+ *      o #0C0      p1 false pit
+ *      p #060      p2 false pit
+ *      w #300      both see pit
+ *      e #C00      p1 sees trap
+ *      r #600      p2 sees trap
+ * 
+ * @todo regenerate branches if collid with solution path
+ * @todo place doors on solution path if nearboring a branch
+ * @todo set traps on branch if neighboring a solution path
+ * 
  */
+
+// debug function to output to console and screen
+// disable in prod
+function log(msg){
+//    console.log(msg);
+//    if(debug){
+//        debug.innerHTML += msg;
+//    }
+}
 
 var generator = function(seed){
     Math.seedrandom(seed);
     
     var block_size = 16;
-    var grid_width = Math.floor(Math.random() * 16) + 8;
-    var grid_height = Math.floor(Math.random() * 16) + 8;
-    var branches = grid_width * grid_height / 100 + 1;
+    var grid_width = Math.floor(Math.random() * 16) + 10;
+    var grid_height = Math.floor(Math.random() * 16) + 10;
+    var branches = grid_width * grid_height / 50 + 1;
+    var ascii_source;
+    var ascii_master;
+    var ascii_player1;
+    var ascii_player2;
+    
+    log("seed is " + seed + "\n");
+    log("grid is " + grid_width + ", " + grid_height + "\n");
     
     // single cell
     var cell = function(r, c){
         this.r = r;
         this.c = c;
+        this.end;
+        this.start;
         this.value = 0;
-
-        function paint(ctx){
-            if(value === 1){
-                ctx.fillStyle = "#333";
-            } else if(value === 2){
-                ctx.fillStyle = "#000";
-            } else {
-                ctx.fillStyle = "#999";
-            }
-            ctx.fillRect(this.c * block_size - block_size, this.r * block_size - block_size, this.c * block_size, this.r * block_size);
-        }
     };
     
     // maze
@@ -185,6 +228,9 @@ var generator = function(seed){
                     break;
                 }
                 path[i+1] = this.next(path[i], end, l);
+                if(l && i === 1){
+                    path[i].start = true;
+                }
             }
             return path;
         };
@@ -219,12 +265,17 @@ var generator = function(seed){
         this.generate_branch = function(){
             // get random point in solution path
             var start = this.solution_path[Math.floor(Math.random() * (this.solution_path.length -1))];
-            var end = this.getRandomPositionRelativeTo(start, 8);
-            var branch = this.generatePath(start, end, true);
-            for(var i = 0; i < branch.length; i++){
-                if(branch[i].value !== "@" && branch[i].value !== "$"){
-                    branch[i].value = 2;
-                }
+            var end = this.getRandomPositionRelativeTo(start, 12);
+            log("branch starting at " + start.r + ", " + start.c + "\n");
+            log("branch ending at " + end.r + ", " + end.c + "\n");
+            if(end){
+                var branch = this.generatePath(start, end, true);
+                end.end = true;
+                for(var i = 0; i < branch.length; i++){
+                    if(branch[i].value === 0){
+                        branch[i].value = 2;
+                    }
+               }
             }
         };
 
@@ -234,30 +285,174 @@ var generator = function(seed){
             var to_far = true;
             var rand_cell;
             var diff_r, diff_c;
+            var try_limit = 0;
             while(to_far){
+                log("try " + try_limit);
                 rand_cell = this.cells[Math.floor(Math.random() * this.cells.length - 1) +1];
+                log("rand cell selected at " + rand_cell.r + ", " + rand_cell.c + "\n");
                 diff_r = Math.abs(rand_cell.r - start.r);
                 diff_c = Math.abs(rand_cell.c - start.c);
                 if(diff_r + diff_c < max_distance && rand_cell.value === 0){
+                    log("rand cell is not too far \n");
+                    if(diff_r > 4 && diff_c > 4 ){
+                        to_far = false;
+                    }
+                    log("rand cell is too close \n");
+                }
+                log("rand cell is too far \n");
+                try_limit++;
+                if(try_limit > 20){
                     to_far = false;
                 }
             }
             return rand_cell;
         };
 
+        // gets all 9 adjacent cells
+        // usefull to calculate if safe for trap etc
+        this.getAdjacentCells = function(cell){
+            var start_c = cell.c - 1;
+            var end_c = cell.c + 1;
+            var start_r = cell.r - 1;
+            var end_r = cell.r + 1;
+            if(start_c < 1) {
+                start_c = 1;
+            }
+            if(end_c > grid_width){
+                end_c = grid_width;
+            }
+            if(start_r < 1) {
+                start_r = 1;
+            }
+            if(end_r > grid_height){
+                end_r = grid_height;
+            }
+            var i, j;
+            var neighboors = [];
+            
+            for(i = start_c; i <= end_c; i++){
+                for(j = start_r; j <= end_r; j++){
+                    var tmp_cell = this.getCellAtPosition(j, i);
+                    if(tmp_cell !== undefined && (cell.c !== tmp_cell.c || cell.r !== tmp_cell.r)){
+                        neighboors.push(tmp_cell);
+                    }
+                }
+            }
+            return neighboors;
+        };
+
+        // sets false walls
+        this.setFalseWalls = function(){
+            for(var i = 0; i < this.cells.length; i++){
+                if(this.cells[i].value === 2 && this.cells[i].start === true){
+                    if(Math.random() * 100 > 20){
+                        if(Math.random() * 100 > 50){
+                            this.cells[i].value = "f";
+                        } else {
+                            this.cells[i].value = "g";
+                        }
+                    }
+                } else if(this.cells[i].value === 1){
+                }
+            }
+        };
+
+        // sets traps
+        this.setTraps = function(){
+            var rand_cell;
+            for(var i = 0; i < grid_height * grid_width; i++){
+                var pos = Math.random() * this.cells.length -1;
+                if(pos < 0){
+                    pos = 0;
+                }
+                rand_cell = this.cells[Math.floor(pos)];
+                // if end of branch path it is ok
+                if(rand_cell.value === 2 && rand_cell.end === true){
+                    rand_cell.value = "w";
+                } else {
+                    var adjacent = this.getAdjacentCells(rand_cell);
+                    var count = 0;
+                    for(var j = 0; j < adjacent.length; j++){
+                        if(adjacent[j].value === 1 || adjacent[j].value === 2){
+                            count++;
+                        }
+                    }
+                    if(count > 6 && rand_cell.value === 2){
+                        rand_cell.value = "w";
+                    }
+                }
+                if(rand_cell.value === "w"){
+                    if(Math.random() * 100 > 50){
+                        if(Math.random() * 100 > 50){
+                            rand_cell.value = "e";
+                        } else {
+                            rand_cell.value = "r";
+                        }
+                    }
+                }
+            }
+        };
+
+        // sets false traps
+        this.setFalseTraps = function(){
+            for(var i = 0; i < this.cells.length; i++){
+                if(this.cells[i].value !== 0 && Math.random() * 100 > 95){
+                    if(this.cells[i].value === 1 || this.cells[i].value === 2){
+                        if(Math.random() * 100 > 50){
+                            this.cells[i].value = "o";
+                        } else {
+                            this.cells[i].value = "p";
+                        }
+                    }
+                }
+            }
+        };
+
         // paint the maze for visualazation
         this.paint = function(ctx){
+            var value;
             for(i = 0, c = 1; i < this.cells.length; i++, c++){
+                value = this.cells[i].value;
                 if(c === grid_width + 1){
                     c = 1;
                 }
                 r = Math.floor(i / grid_width + 1);
-                if(this.cells[i].value === 1){
-                    ctx.fillStyle = "#333";
-                } else if (this.cells[i].value === 2){
-                    ctx.fillStyle = "#666";
-                } else {
-                    ctx.fillStyle = "#999";
+                switch(value){
+                    case 1://solution
+                        ctx.fillStyle = "#333";
+                        ctx.fillStyle = "#666";
+                        break;
+                    case 2://branch
+                        ctx.fillStyle = "#666";
+                        break;
+                    case "w":// trap both see pit
+                        ctx.fillStyle = "#300";
+                        break;
+                    case "e":// trap p1 sees trap
+                        ctx.fillStyle = "#C00";
+                        break;
+                    case "r":// trap p2 sees trap
+                        ctx.fillStyle = "#600";
+                        break;
+                    case "f"://p1 false wall
+                        ctx.fillStyle = "#00C";
+                        break;
+                    case "g":// p2 false wall
+                        ctx.fillStyle = "#006";
+                        break;
+                    case "o":// p1 false trap
+                        ctx.fillStyle = "#0F0";
+                        break;
+                    case "p":// p2 false trap
+                        ctx.fillStyle = "#030";
+                        break;
+                    case "@":
+                    case "$":
+                        ctx.fillStyle = "#FFF";
+                        break;
+                    default://wall
+                        ctx.fillStyle = "#999";
+                        break;
                 }
                 ctx.fillRect(c * block_size - block_size, r * block_size - block_size, c * block_size, r * block_size);
             }
@@ -287,11 +482,142 @@ var generator = function(seed){
             return ascii;
         };
 
+        this.getMasterAscii = function(){
+            var c = 1;
+            var ascii = "";
+            for(var i = 0; i < this.cells.length; i++, c++){
+                if(c === grid_width + 1){
+                    ascii += "\n";
+                    c = 1;
+                }
+                switch (this.cells[i].value){
+                    case '@': // #FFF      start
+                        ascii += "@@";
+                        break;
+                    case '$': // #FFF      end
+                        ascii += "$$";
+                        break;
+                    case 0: // #999      wall
+                        ascii += "##";
+                        break;
+                    // floor and false hazards
+                    case 'f': // #00C      p1 false wall
+                    case 'g': // #006      p2 false wall
+                    case 1: // #333,#666 floor
+                    case 2:
+                    case 'o': // #0C0      p1 false pit
+                    case 'p': // #060      p2 false pit
+                        ascii += "..";
+                        break;
+                    // real hazards
+                    case 'e': // #C00      p1 sees trap
+                    case 'r': // #600      p2 sees trap
+                    case 'w': // #300      both see pit
+                        ascii += "ww";
+                        break;
+                        
+                }
+            }
+            return ascii;
+        };
+        
+        this.getPlayer1Ascii = function(){
+            var c = 1;
+            var ascii = "";
+            for(var i = 0; i < this.cells.length; i++, c++){
+                if(c === grid_width + 1){
+                    ascii += "\n";
+                    c = 1;
+                }
+                switch (this.cells[i].value){
+                    case '@': // #FFF      start
+                        ascii += "@@";
+                        break;
+                    case '$': // #FFF      end
+                        ascii += "$$";
+                        break;
+                    case 'f': // #00C      p1 false wall
+                    case 0: // #999      wall
+                        ascii += "##";
+                        break;
+                    // floor and false hazards
+                    case 'g': // #006      p2 false wall
+                    case 1: // #333,#666 floor
+                    case 2:
+                    case 'p': // #060      p2 false pit
+                    case 'r': // #600      p2 sees trap
+                        ascii += "..";
+                        break;
+                    case 'o': // #0C0      p1 false pit
+                        ascii += "oo";
+                        break;
+                    // real hazards
+                    case 'e': // #C00      p1 sees trap
+                    case 'w': // #300      both see pit
+                        ascii += "ww";
+                        break;
+                        
+                }
+            }
+            return ascii;
+        };
+        
+        this.getPlayer2Ascii = function(){
+            var c = 1;
+            var ascii = "";
+            for(var i = 0; i < this.cells.length; i++, c++){
+                if(c === grid_width + 1){
+                    ascii += "\n";
+                    c = 1;
+                }
+                switch (this.cells[i].value){
+                    case '@': // #FFF      start
+                        ascii += "@@";
+                        break;
+                    case '$': // #FFF      end
+                        ascii += "$$";
+                        break;
+                    case 'g': // #006      p2 false wall
+                    case 0: // #999      wall
+                        ascii += "##";
+                        break;
+                    // floor and false hazards
+                    case 'e': // #C00      p1 sees trap
+                    case 'f': // #00C      p1 false wall
+                    case 1: // #333,#666 floor
+                    case 2:
+                    case 'o': // #0C0      p1 false pit
+                        ascii += "..";
+                        break;
+                    case 'p': // #060      p2 false pit
+                        ascii += "oo";
+                        break;
+                    // real hazards
+                    case 'r': // #600      p2 sees trap
+                    case 'w': // #300      both see pit
+                        ascii += "ww";
+                        break;
+                        
+                }
+            }
+            return ascii;
+        };
+
         // get shit done
+        log("generating solution \n");
         this.generate_solution_path();
         for(var i = 0; i < branches; i++){
+            log("generating a branch \n");
             this.generate_branch();
         }
+        log("generating false walls");
+        this.setFalseWalls();
+        log("generating false traps");
+        this.setFalseTraps();
+        this.setFalseTraps();
+        this.setFalseTraps();
+        log("generating real traps");
+        this.setTraps();
     };
 
     // init the canvas for visualazation
@@ -302,17 +628,28 @@ var generator = function(seed){
     };
 };
 
-//// generate ascii
-//var gen = new generator("ggj 2015");
-//var m = new gen.maze();
-//var ascii = m.getAscii();
-//console.log(ascii);
-//
-//// visual debug ascii
-//var container = document.getElementById("container");
-//var canvas = document.getElementById("scene");
-//var ctx = canvas.getContext("2d");
-//var ascii_container = document.getElementById("ascii");
-//gen.initScene(container);
-//m.paint(ctx);
-//ascii_container.innerHTML = ascii;
+/*
+// generate ascii
+var debug = document.getElementById("debug");
+var gen = new generator(Date());
+var m = new gen.maze();
+var ascii = m.getAscii();
+var master_ascii = m.getMasterAscii();
+var p1_ascii = m.getPlayer1Ascii();
+var p2_ascii = m.getPlayer2Ascii();
+
+// visual debug ascii
+var container = document.getElementById("container");
+var canvas = document.getElementById("scene");
+var ctx = canvas.getContext("2d");
+var ascii_container = document.getElementById("ascii");
+var master_ascii_container = document.getElementById("master_ascii");
+var p1_ascii_container = document.getElementById("p1_ascii");
+var p2_ascii_container = document.getElementById("p2_ascii");
+gen.initScene(container);
+m.paint(ctx);
+ascii_container.innerHTML = ascii;
+master_ascii_container.innerHTML = master_ascii;
+p1_ascii_container.innerHTML = p1_ascii;
+p2_ascii_container.innerHTML = p2_ascii;
+*/
