@@ -17,7 +17,8 @@ var Game = mongoose.model('Game', new mongoose.Schema({
 Game.remove({}, function(){
     console.log('deleted games');
 });
-var app = require('express')();
+var express = require('express');
+var app = express();
 app.all('/game/ready/:sid/:pid', function(req, res){
     var pid = req.params.pid;
     var updates = {  };
@@ -93,5 +94,5 @@ app.get('/game', function(req, res){
         res.send({sid: game.id, pid: pid});
     });
 });
-
+app.use(express.static(__dirname+'/../'));
 app.listen(80);
