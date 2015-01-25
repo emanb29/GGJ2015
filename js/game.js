@@ -330,7 +330,11 @@ function PutLevelIntoSceneGraph()
 
 THREE.DefaultLoadingManager.onLoad = function()
 {
+	InitializerPointerLock();
+	init();
+	GoToNextLevel();
 	PutLevelIntoSceneGraph()
+	animate();
 }
 
 

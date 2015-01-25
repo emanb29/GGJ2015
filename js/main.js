@@ -1,10 +1,6 @@
 
 console.log('started')
 
-InitializerPointerLock();
-init();
-GoToNextLevel();
-animate();
 
 var isAnimationEnabled = true
 var isControlEnabled = false
@@ -409,7 +405,9 @@ function SendPositionToServer(x, z)
 {
 	function requestListener()
 	{
-		var json = JSON.parse(this.responseText)
+		var json = JSON.parse(this.responseText);
+		controls.getObject().position.x = (controls.getObject().position.x+json.x)/2;
+		controls.getObject().position.z = (controls.getObject().position.z+json.z)/2;
 		console.log('other player location:', json)
 	}
 	var xhr = new XMLHttpRequest();
