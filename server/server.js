@@ -32,10 +32,12 @@ app.all('/game/ready/:sid/:pid', function(req, res){
         };
     }
     Game.findByIdAndUpdate(req.params.sid, updates, function(err, record){
-        if ((pid == 1 && record.p2state.ready == true) || (pid == 2 && record.p1state.ready == true)){
-            res.send(true);
-        } else {
-            res.send(false);
+        if (record) {
+            if ((pid == 1 && record.p2state.ready == true) || (pid == 2 && record.p1state.ready == true)) {
+                res.send(true);
+            } else {
+                res.send(false);
+            }
         }
     });
 });
@@ -67,10 +69,12 @@ app.post('/game/:sid/:pid/:x/:z', function(req, res){
         }
     }
     Game.findByIdAndUpdate(req.params.sid, updates, function(err, record){
-        if (pid = 1) {
-            res.send(record.p2state);
-        } else {
-            res.send(record.p1state);
+        if(record) {
+            if (pid = 1) {
+                res.send(record.p2state);
+            } else {
+                res.send(record.p1state);
+            }
         }
     });
 });
