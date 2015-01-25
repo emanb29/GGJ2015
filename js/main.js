@@ -4,6 +4,7 @@ console.log('started')
 
 var camera, scene, renderer;
 var geometry, material, mesh;
+var sounds;
 var controls;
 
 // For collision detection (cool!)
@@ -199,7 +200,22 @@ function init()
 	//
 
 	window.addEventListener( 'resize', onWindowResize, false );
-
+	
+	//Sound stuff.
+	sounds = function(name, src, loop, volume) 
+	{
+		sounds[name] = document.createElement('audio');
+		sounds[name].setAttribute('src', src);
+		sounds[name].setAttribute('loop', loop);
+		sounds[name].setAttribute('volume', volume);
+		sounds[name].setAttribute('autoplay', true);
+		sounds[name].load();
+	}
+	sounds('cave', 'sounds/cave.mp3', true, 0.5);
+	sounds('walking', 'sounds/walking.mp3', true, 1);
+	sounds('running', 'sounds/running.mp3', true, 1);
+	sounds.running.pause();
+	sounds.walking.pause();
 }
 
 function onWindowResize()
@@ -257,6 +273,16 @@ function animate()
 		}
 
 		prevTime = time;
+		
+		//Plays walking sound effect.
+		if (controls.getObject().position.y <= 0 && (Math.abs(velocity.x) > 0.1 || Math.abs(velocity.z) > 0.1)) {
+			if (sounds.walking.paused) {
+				sounds.walking.currentTime = 0.75;
+				sounds.walking.play();
+			}
+		} else {
+			sounds.walking.pause();
+		}
 	}
 
 	renderer.render( scene, camera );
