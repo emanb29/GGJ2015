@@ -197,7 +197,7 @@ function init()
 	raycaster = new THREE.Raycaster( new THREE.Vector3(), new THREE.Vector3( 0, - 1, 0 ), 0, 10 );
 
 	// floor
-
+/*
 	geometry = new THREE.PlaneGeometry( 2000, 2000, 100, 100 );
 	geometry.applyMatrix( new THREE.Matrix4().makeRotationX( - Math.PI / 2 ) );
 
@@ -223,7 +223,7 @@ function init()
 
 	mesh = new THREE.Mesh( geometry, material );
 	scene.add( mesh );
-
+*/
 	// objects
 
 	geometry = new THREE.BoxGeometry( 20, 20, 20 );

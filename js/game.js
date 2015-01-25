@@ -210,13 +210,25 @@ function PutLevelIntoSceneGraph()
 	geometries[GAME.Wall] = new THREE.BoxGeometry( blockLength, blockHeight, blockLength )
 	geometries[GAME.Floor] = new THREE.BoxGeometry( blockLength, blockHeight / 2.0, blockLength ); 
 	geometries[GAME.Pit] = undefined
-	geometries[GAME.Door] = new THREE.BoxGeometry( blockLength, blockHeight, blockLength )
+	geometries[GAME.Trap] = new THREE.CylinderGeometry( 0, blockLength * 0.25, blockHeight / 2.0, 8, 1, false );
+	geometries[GAME.Start] = new THREE.TorusGeometry( blockLength * 0.25, blockLength * 0.75 )
+	geometries[GAME.End] = new THREE.IcosahedronGeometry( blockLength * 0.25 )
+
 
 	var materials = {}
 	materials[GAME.Wall] = new THREE.MeshBasicMaterial( { color: 0x777777 })
 	materials[GAME.Floor] = undefined
 	materials[GAME.Pit] = new THREE.MeshBasicMaterial( { color: 0x000000 })
 	materials[GAME.Door] = new THREE.MeshBasicMaterial( { color: 0xff0000 })
+
+	var offsets = {}
+	offsets[GAME.Wall] = 0.0
+	offsets[GAME.Floor] = -blockHeight / 2.0
+	offsets[GAME.Pit] = -blockHeight / 2.0
+	offsets[GAME.Trap] = 0.0
+	offsets[GAME.Start] = 0.0
+	offsets[GAME.End] = 0.0
+
 
 	// material = new THREE.MeshBasicMaterial( { vertexColors: THREE.VertexColors } );
 //	material = new THREE.MeshBasicMaterial( { vertexColors: THREE.VertexColors } );
@@ -226,14 +238,18 @@ function PutLevelIntoSceneGraph()
 	{
 		for (var x = 0; x < displayedLevel[0].length; x++)
 		{
-			var geometry = geometries[displayedLevel[x][z]]
-			var material = materials[displayedLevel[x][z]]
+			var block = displayedLevel[x][z]
+
+			var geometry = geometries[block]
+			var material = materials[block]
 
 			mesh = new THREE.Mesh( geometry, material );
 			scene.add( mesh );
 			mesh.position.x = x * blockLength
 			mesh.position.z = z * blockLength
+			mesh.position.y = offsets[block]
 //			mesh.position.y = blockHeight / 2.0
+
 		}
 	}
 }
