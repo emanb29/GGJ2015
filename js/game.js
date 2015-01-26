@@ -78,12 +78,43 @@ function ParseLevel(levelString)
 
 function LoadLevel(truth, p1, p2)
 {
-	// Turn into 3x 2D arrays of stuff.
-	var level_truth = ParseLevel(LoadFile(truth))
-	var level_p1 = ParseLevel(LoadFile(p1))
-	var level_p2 = ParseLevel(LoadFile(p2))
+    // only load url if it contains /
+    // otherwise we already have the data
+    if(truth.indexOf("/") !== -1){
+        truth = LoadFile(truth);
+        p1 = LoadFile(p1);
+        p2 = LoadFile(p2);
+    }
+    // Turn into 3x 2D arrays of stuff.
+    var level_truth = ParseLevel(truth);
+    var level_p1 = ParseLevel(p1);
+    var level_p2 = ParseLevel(p2);
 
-	return [level_truth, level_p1, level_p2]
+    return [level_truth, level_p1, level_p2]
+}
+
+/**
+ * generate a new seed
+ */
+function GenerateSeed(){
+    return Date();
+}
+
+/**
+ * builds a level with the given seed
+ * returns an array with three ascii sets and the seed
+ * master, player 1, player 2, seed
+ */
+function BuildLevel(seed){
+    if(seed === undefined){
+        seed = GenerateSeed();
+    }
+    var gen = new generator(seed);
+    var m = new gen.maze();
+    var master_ascii = m.getMasterAscii();
+    var p1_ascii = m.getPlayer1Ascii();
+    var p2_ascii = m.getPlayer2Ascii();
+    return [master_ascii, p1_ascii, p2_ascii, seed];
 }
 
 
@@ -217,7 +248,6 @@ function LoadMeshes()
 	{
 //		this.filename
 		blockMeshes[this.blockID] = object
-		console.log(this.blockID, this.filename, object)
 		// TODO Save this object.
 
 		object.traverse(function(obj)
@@ -330,7 +360,13 @@ function PutLevelIntoSceneGraph()
 
 THREE.DefaultLoadingManager.onLoad = function()
 {
+	InitializerPointerLock();
+	init();
+
+	GoToNextLevel();
 	PutLevelIntoSceneGraph()
+
+	animate();
 }
 
 

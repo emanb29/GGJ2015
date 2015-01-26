@@ -1,11 +1,6 @@
 
 console.log('started')
 
-InitializerPointerLock();
-init();
-GoToNextLevel();
-animate();
-
 var isAnimationEnabled = true
 var isControlEnabled = false
 
@@ -40,12 +35,19 @@ function GoToNextLevel()
 		playerNumber = json.pid
 		sessionID = json.sid
 
+		// Show which player you are
+		var playerNumberDiv = document.getElementById( 'playerNumberDiv' );
+		playerNumberDiv.innerHTML = 'P' + playerNumber
+
 		console.log('Requested new game from server, player',playerNumber,'session ID',sessionID)
 /*
 		console.log(this.responseText);
 		console.log(json)
 */
 		// TODO Start spinner.
+
+		var gameStateDiv = document.getElementById( 'GameState' );
+		gameStateDiv.innerHTML = 'Waiting for other player...'
 
 		WaitForOtherPlayer()
 	}
@@ -75,6 +77,9 @@ function WaitForOtherPlayer()
 
 //			isAnimationEnabled = true
 			isControlEnabled = true
+
+			var gameStateDiv = document.getElementById( 'GameState' );
+			gameStateDiv.innerHTML = 'Other player ready, play!'
 		}
 		else
 		{

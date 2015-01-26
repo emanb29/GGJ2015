@@ -50,3 +50,25 @@ body
 	cursor: pointer;
 
 }
+
+#WaitingForPlayer
+{
+	margin: auto;
+	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	font-size: 4em;
+	font-color: white;
+	z-index: 101
+}
+
+#playerNumberDiv
+{
+	position:absolute;
+	top:0px;
+	right:0px;
+	font-size:50px;
+	color:rgba(200,200,200,0.4);
+}
