@@ -1,0 +1,35 @@
+newmtl Wall:lambert3SG
+illum 4
+Kd 0.00 0.00 0.00
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+map_Kd Cave_Wall_1024.jpg
+Ni 1.00
+newmtl Wall:lambert4SG
+illum 4
+Kd 0.00 0.00 0.00
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+map_Kd -3_PitWall_1024.jpg
+Ni 1.00
+newmtl Wall:lambert5SG
+illum 4
+Kd 0.00 0.00 0.00
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+map_Kd -2_PitWall_1024.jpg
+Ni 1.00
+newmtl Wall:lambert6SG
+illum 4
+Kd 0.00 0.00 0.00
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+map_Kd -1_PitWall_1024.jpg
+Ni 1.00
+newmtl Wall:lambert16SG
+illum 4
+Kd 0.00 0.00 0.00
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+map_Kd Cave_Wall_TOP-Part_1024.jpg
+Ni 1.00
