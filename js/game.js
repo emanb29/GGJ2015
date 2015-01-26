@@ -259,6 +259,8 @@ function PutLevelIntoSceneGraph()
 				startingMazeX = x
 				startingMazeZ = z
 			}
+
+			verticallyCollidableObjects.push(mesh);
 		}
 	}
 

@@ -6,8 +6,8 @@ var camera, scene, renderer;
 var geometry, material, mesh;
 var controls;
 
-var objects = [];
-
+// For collision detection (cool!)
+var verticallyCollidableObjects = [];
 var raycaster;
 
 // http://www.html5rocks.com/en/tutorials/pointerlock/intro/
@@ -220,7 +220,7 @@ function animate()
 		raycaster.ray.origin.copy( controls.getObject().position );
 		raycaster.ray.origin.y -= 10;
 
-		var intersections = raycaster.intersectObjects( objects );
+		var intersections = raycaster.intersectObjects( verticallyCollidableObjects );
 
 		var isOnObject = intersections.length > 0;
 
@@ -248,10 +248,10 @@ function animate()
 		controls.getObject().translateY( velocity.y * delta );
 		controls.getObject().translateZ( velocity.z * delta );
 
-		if ( controls.getObject().position.y < 10 ) {
-
+		if ( controls.getObject().position.y < -50 )
+		{
 			velocity.y = 0;
-			controls.getObject().position.y = 10;
+			controls.getObject().position.y = -50;
 
 			canJump = true;
 		}
