@@ -403,6 +403,8 @@ function animate()
 	renderer.render( scene, camera );
 	SendPositionToServer(controls.getObject().position.x, controls.getObject().position.z);
 
+}
+
 function SendPositionToServer()
 {
 	function requestListener()
