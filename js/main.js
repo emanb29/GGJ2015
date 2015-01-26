@@ -405,7 +405,7 @@ function animate()
 
 }
 
-function SendPositionToServer()
+function SendPositionToServer(x, z)
 {
 	function requestListener()
 	{
