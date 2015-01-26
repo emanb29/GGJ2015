@@ -1,6 +1,15 @@
 
 console.log('started')
 
+InitializerPointerLock();
+init();
+GoToNextLevel();
+animate();
+
+var isAnimationEnabled = true
+var isControlEnabled = false
+
+
 
 var camera, scene, renderer;
 var geometry, material, mesh;
@@ -9,6 +18,97 @@ var controls;
 // For collision detection (cool!)
 var verticallyCollidableObjects = [];
 var raycaster;
+
+var playerNumber = undefined
+var sessionID = undefined
+
+// TODO !!!
+// TODO !!!
+// TODO !!!
+// TODO Listen for window unload, etc. DOM events, call node.js server's 'delete' method.
+// TODO !!!
+// TODO !!!
+// TODO !!!
+
+function GoToNextLevel()
+{
+	function requestListener()
+	{
+		var json = JSON.parse(this.responseText)
+
+		playerNumber = json.pid
+		sessionID = json.sid
+
+		console.log('Requested new game from server, player',playerNumber,'session ID',sessionID)
+/*
+		console.log(this.responseText);
+		console.log(json)
+*/
+		// TODO Start spinner.
+
+		WaitForOtherPlayer()
+	}
+
+	var xhr = new XMLHttpRequest();
+	xhr.onload = requestListener;
+	xhr.open('get', '/game', true);
+	xhr.send();
+}
+
+function WaitForOtherPlayer()
+{
+	function requestListener()
+	{
+		var json = JSON.parse(this.responseText)
+
+//		playerNumber = json.pid
+//		sessionID = json.sid
+
+		var isReady = json
+
+		console.log(json)
+
+		if (json)
+		{
+			console.log('Other player is ready - starting game !!!')
+
+//			isAnimationEnabled = true
+			isControlEnabled = true
+		}
+		else
+		{
+			console.log('Other player is NOT ready')
+
+			// Send another request!
+			WaitForOtherPlayer()
+		}
+	}
+
+	var xhr = new XMLHttpRequest();
+	xhr.onload = requestListener;
+	xhr.open('get', '/game/ready/' + sessionID + '/' + playerNumber, true);
+	xhr.send();
+}
+
+function EndSession()
+{
+/*
+	var xhr = new XMLHttpRequest();
+	xhr.onload = requestListener;
+	xhr.open('get', '/game', true);
+	xhr.send();
+*/
+}
+
+window.addEventListener('beforeunload', function(event)
+{
+	EndSession()
+})
+
+window.addEventListener('unload', function(event)
+{
+	EndSession()
+})
 
 // http://www.html5rocks.com/en/tutorials/pointerlock/intro/
 
@@ -105,16 +205,14 @@ function InitializerPointerLock()
 
 }
 
-InitializerPointerLock();
-init();
-animate();
-
 var controlsEnabled = false;
 
 var moveForward = false;
 var moveBackward = false;
 var moveLeft = false;
 var moveRight = false;
+
+var canJump = true;
 
 var prevTime = performance.now();
 var velocity = new THREE.Vector3();
@@ -176,10 +274,13 @@ function init()
 	scene = new THREE.Scene();
 	scene.fog = new THREE.Fog( 0xffffff, 0, 750 );
 
+	var ambientLight = new THREE.AmbientLight( 0xffffff )
+	scene.add(ambientLight)
+/*
 	var light = new THREE.HemisphereLight( 0xeeeeff, 0x777788, 0.75 );
 	light.position.set( 0.5, 1, 0.75 );
 	scene.add( light );
-
+*/
 	controls = new THREE.PointerLockControls( camera );
 	scene.add( controls.getObject() );
 
@@ -208,14 +309,23 @@ function onWindowResize()
 	camera.updateProjectionMatrix();
 
 	renderer.setSize( window.innerWidth, window.innerHeight );
-
 }
 
 function animate()
 {
-	requestAnimationFrame( animate );
+/*
+	if (!isAnimationEnabled)
+	{
+		// Just render, don't simulate / animate.
+		renderer.render( scene, camera );
+		return;
+	}
+*/
 
-	if ( controlsEnabled )
+	requestAnimationFrame(animate)
+
+
+	if (isControlEnabled && controlsEnabled)
 	{
 		raycaster.ray.origin.copy( controls.getObject().position );
 		raycaster.ray.origin.y -= 10;
@@ -248,10 +358,13 @@ function animate()
 		controls.getObject().translateY( velocity.y * delta );
 		controls.getObject().translateZ( velocity.z * delta );
 
+		// TODO Don't disable gravity :-)
+		controls.getObject().position.y = 25
 		if ( controls.getObject().position.y < -50 )
 		{
 			velocity.y = 0;
-			controls.getObject().position.y = -50;
+			// controls.getObject().position.y = -50;
+			controls.getObject().position.y = 0;
 
 			canJump = true;
 		}
@@ -259,6 +372,21 @@ function animate()
 		prevTime = time;
 	}
 
+
+
 	renderer.render( scene, camera );
+	SendPositionToServer(controls.getObject().position.x, controls.getObject().position.z);
+
+function SendPositionToServer()
+{
+	function requestListener()
+	{
+		var json = JSON.parse(this.responseText)
+		console.log('other player location:', json)
+	}
+	var xhr = new XMLHttpRequest();
+	xhr.onload = requestListener;
+	xhr.open('post', '/game/' + sessionID + '/' + playerNumber + '/' + x + '/' + z, true);
+	xhr.send();
 
 }

@@ -199,6 +199,46 @@ Send inputs to server
 
 */
 
+var blockMeshes = {}
+
+function LoadMeshes()
+{
+	var blockToMeshFilename = {}
+	blockToMeshFilename[GAME.Wall] = 'models/Wall_6Column_OBJ'
+	blockToMeshFilename[GAME.Floor] = 'models/Floor_3Column_OBJ'
+	blockToMeshFilename[GAME.Pit] = 'models/Pit_TopBot_OBJ'
+	// blockToMeshFilename[GAME.Trap] = 
+	blockToMeshFilename[GAME.Start] = 'models/Floor_3Column_OBJ'
+	// blockToMeshFilename[GAME.End] = 
+
+	var loader = new THREE.OBJMTLLoader()
+
+	var onLoad = function(object)
+	{
+//		this.filename
+		blockMeshes[this.blockID] = object
+		console.log(this.blockID, this.filename, object)
+		// TODO Save this object.
+
+		object.traverse(function(obj)
+		{
+			if (obj.material != undefined)
+			{
+				obj.material = new THREE.MeshBasicMaterial( { map: obj.material.map });
+//				obj.material.name = materialName;
+			}
+		})
+	}
+
+	_.each(blockToMeshFilename, function (filename, blockID, list)
+	{
+		var onLoad_Bound = onLoad.bind({filename: filename, blockID: blockID})
+//		var onLoad_Curried = _.bind(onLoad, filename, key)
+		loader.load(filename + '.obj', filename + '.mtl', onLoad_Bound)
+	});
+}
+
+LoadMeshes()
 function PutLevelIntoSceneGraph()
 {
 	var displayedLevel = CLIENT.playerNumber == 1 ? CLIENT.LevelP1: CLIENT.LevelP2;
@@ -242,19 +282,31 @@ function PutLevelIntoSceneGraph()
 	{
 		for (var x = 0; x < displayedLevel[0].length; x++)
 		{
-			var block = displayedLevel[x][z]
+			var blockID = displayedLevel[x][z]
 
-			var geometry = geometries[block]
-			var material = materials[block]
+			var mesh = undefined
 
-			mesh = new THREE.Mesh( geometry, material );
+			if (blockMeshes[blockID] != undefined)
+			{
+				mesh = blockMeshes[blockID].clone()
+				var scale = blockLength / 2.0
+				mesh.scale.set(scale, scale, scale)
+			}
+			else
+			{
+				var geometry = geometries[blockID]
+				var material = materials[blockID]
+
+				mesh = new THREE.Mesh( geometry, material );
+			}
+
 			scene.add( mesh );
 			mesh.position.x = x * blockLength
 			mesh.position.z = z * blockLength
-			mesh.position.y = offsets[block]
+//			mesh.position.y = offsets[blockID]
 //			mesh.position.y = blockHeight / 2.0
 
-			if (block == GAME.Start)
+			if (blockID == GAME.Start)
 			{
 				startingMazeX = x
 				startingMazeZ = z
@@ -274,7 +326,15 @@ function PutLevelIntoSceneGraph()
 
 }
 
-PutLevelIntoSceneGraph()		// TODO Do this in response to level changes.
+// Wait for meshes to load before starting !!!
+
+THREE.DefaultLoadingManager.onLoad = function()
+{
+	PutLevelIntoSceneGraph()
+}
+
+
+//PutLevelIntoSceneGraph()		// TODO Do this in response to level changes.
 
 // TODO Clear level out of scene graph.
 
