@@ -40,6 +40,10 @@ function GoToNextLevel()
 		playerNumber = json.pid
 		sessionID = json.sid
 
+		// Show which player you are
+		var playerNumberDiv = document.getElementById( 'playerNumberDiv' );
+		playerNumberDiv.innerHTML = 'P' + playerNumber
+
 		console.log('Requested new game from server, player',playerNumber,'session ID',sessionID)
 /*
 		console.log(this.responseText);

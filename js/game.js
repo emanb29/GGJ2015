@@ -217,7 +217,6 @@ function LoadMeshes()
 	{
 //		this.filename
 		blockMeshes[this.blockID] = object
-		console.log(this.blockID, this.filename, object)
 		// TODO Save this object.
 
 		object.traverse(function(obj)
