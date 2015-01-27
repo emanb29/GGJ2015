@@ -1,28 +1,34 @@
 <html>
 
 <head>
-	<title>WHAT DO WE DO NOW?</title>
+	<title>Dissonance</title>
+	<link rel="stylesheet" type="text/css" href="css/style.css" >
 </head>
 
-<style src="css/style.css"></style>
 
 <body>
-
-
 
 <!-- Game goes here!
  -->
 
 	<div id="blocker">
 		<div id="instructions">
+			<span style='font-size:60px'>DISSONANCE</span>
+			<br />
 			<span style="font-size:40px">Click to play</span>
 			<br />
-			(W, A, S, D = Move, SPACE = Jump, MOUSE = Look around)
+			(WASD MouseLook)
+			<br />
+			<span id='GameState' />
 		</div>
 	</div>
 
-	<div id='playerNumberDiv' style='position:absolute; top:0px; right:0px; font-size:50px;'></div>
-
+	<div id='playerNumberDiv'></div>
+<!--
+	<div style='position:absolute; width: 100%; height: 100%; background-color:rgba(0,0,0,0.75); z-index:100'>
+		<div id='WaitingForPlayer'>Waiting for player</div>
+	</div>
+-->
 
 <script src="js/underscore.js"></script>
 <script src="js/Three.js"></script>

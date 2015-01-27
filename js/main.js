@@ -1,11 +1,6 @@
 
 console.log('started')
 
-InitializerPointerLock();
-init();
-GoToNextLevel();
-animate();
-
 var isAnimationEnabled = true
 var isControlEnabled = false
 
@@ -51,6 +46,9 @@ function GoToNextLevel()
 */
 		// TODO Start spinner.
 
+		var gameStateDiv = document.getElementById( 'GameState' );
+		gameStateDiv.innerHTML = 'Waiting for other player...'
+
 		WaitForOtherPlayer()
 	}
 
@@ -79,6 +77,9 @@ function WaitForOtherPlayer()
 
 //			isAnimationEnabled = true
 			isControlEnabled = true
+
+			var gameStateDiv = document.getElementById( 'GameState' );
+			gameStateDiv.innerHTML = 'Other player ready, play!'
 		}
 		else
 		{
